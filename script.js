@@ -22,7 +22,7 @@ async function fetchAndProcessProxies() {
         if (!proxies[country]) {
           proxies[country] = [];
         }
-        proxies[country].push(\`\${ip}:\${port}\`);
+        proxies[country].push(ip + ':' + port);
       }
     });
 
@@ -183,13 +183,13 @@ export default {
             radio.type = 'radio';
             radio.name = 'proxy';
             radio.value = proxy;
-            radio.id = \`proxy-\${index}\`;
+            radio.id = 'proxy-' + index;
             radio.addEventListener('change', () => {
               selectedProxy = proxy;
             });
 
             radioLabel.appendChild(radio);
-            radioLabel.append(\` \${proxy}\`);
+            radioLabel.append(' ' + proxy);
             proxyList.appendChild(radioLabel);
           });
         }
@@ -208,10 +208,10 @@ export default {
           const vlessUUID = 'fff283d3-4d7a-4c6f-ac43-949a1517b3cf';
           const trojanUUID = '3f139b42-6f24-4390-8466-ac1f2fcf3610';
 
-          const vlessLink = \`vless://\${vlessUUID}@\${proxyHost}:\${proxyPort}/?type=ws&encryption=none&flow=&host=\${host}&path=%2F\${proxyHost}-\${proxyPort}&security=tls&sni=\${sni}#ID%20PT%20Telekomunikasi%20Indonesia%20%5B\${proxyHost}%5D\`;
-          const trojanLink = \`trojan://\${trojanUUID}@\${proxyHost}:\${proxyPort}/?type=ws&host=\${host}&path=%2F\${proxyHost}-\${proxyPort}&security=tls&sni=\${sni}#ID%20PT%20Telekomunikasi%20Indonesia%20%5B\${proxyHost}%5D\`;
+          const vlessLink = 'vless://' + vlessUUID + '@' + proxyHost + ':' + proxyPort + '/?type=ws&encryption=none&flow=&host=' + host + '&path=%2F' + proxyHost + '-' + proxyPort + '&security=tls&sni=' + sni + '#ID%20PT%20Telekomunikasi%20Indonesia%20%5B' + proxyHost + '%5D';
+          const trojanLink = 'trojan://' + trojanUUID + '@' + proxyHost + ':' + proxyPort + '/?type=ws&host=' + host + '&path=%2F' + proxyHost + '-' + proxyPort + '&security=tls&sni=' + sni + '#ID%20PT%20Telekomunikasi%20Indonesia%20%5B' + proxyHost + '%5D';
 
-          outputDiv.textContent = \`\${vlessLink}\\n\\n\${trojanLink}\`;
+          outputDiv.textContent = vlessLink + '\n\n' + trojanLink;
         }
 
         countrySelect.addEventListener('change', (e) => {
