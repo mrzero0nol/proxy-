@@ -1,6 +1,50 @@
 
+async function fetchAndProcessProxies() {
+  const proxyTxtUrl = 'https://raw.githubusercontent.com/mrzero0nol/My-v2ray/refs/heads/main/proxyList.txt';
+  const proxyJsonUrl = 'https://raw.githubusercontent.com/mrzero0nol/My-v2ray/refs/heads/main/KvProxyList.json';
+  let proxies = {};
+
+  try {
+    const [txtResponse, jsonResponse] = await Promise.all([
+      fetch(proxyTxtUrl),
+      fetch(proxyJsonUrl)
+    ]);
+
+    const txtData = await txtResponse.text();
+    const jsonData = await jsonResponse.json();
+
+    txtData.split('\n').forEach(line => {
+      const parts = line.split(',');
+      if (parts.length >= 3) {
+        const ip = parts[0];
+        const port = parts[1];
+        const country = parts[2];
+        if (!proxies[country]) {
+          proxies[country] = [];
+        }
+        proxies[country].push(\`\${ip}:\${port}\`);
+      }
+    });
+
+    for (const country in jsonData) {
+      if (!proxies[country]) {
+        proxies[country] = [];
+      }
+      proxies[country] = [...new Set([...proxies[country], ...jsonData[country]])];
+    }
+  } catch (error) {
+    console.error('Error fetching proxies:', error);
+    // Return empty object on failure
+    return {};
+  }
+  return proxies;
+}
+
 export default {
   async fetch(request) {
+    const proxies = await fetchAndProcessProxies();
+    const proxiesJson = JSON.stringify(proxies);
+
     const html = `
 <!DOCTYPE html>
 <html lang="id">
@@ -111,49 +155,8 @@ export default {
         const generateButton = document.getElementById('generateButton');
         const outputDiv = document.getElementById('output');
 
-        const proxyTxtUrl = 'https://raw.githubusercontent.com/mrzero0nol/My-v2ray/refs/heads/main/proxyList.txt';
-        const proxyJsonUrl = 'https://raw.githubusercontent.com/mrzero0nol/My-v2ray/refs/heads/main/KvProxyList.json';
-
-        let proxies = {};
+        const proxies = ${proxiesJson};
         let selectedProxy = null;
-
-        async function fetchProxies() {
-          try {
-            const [txtResponse, jsonResponse] = await Promise.all([
-              fetch(proxyTxtUrl),
-              fetch(proxyJsonUrl)
-            ]);
-
-            const txtData = await txtResponse.text();
-            const jsonData = await jsonResponse.json();
-
-            // Parse txt data
-            txtData.split('\n').forEach(line => {
-              const parts = line.split(',');
-              if (parts.length >= 3) {
-                const ip = parts[0];
-                const port = parts[1];
-                const country = parts[2];
-                if (!proxies[country]) {
-                  proxies[country] = [];
-                }
-                proxies[country].push(\`\${ip}:\${port}\`);
-              }
-            });
-
-            // Combine with json data
-            for (const country in jsonData) {
-              if (!proxies[country]) {
-                proxies[country] = [];
-              }
-              proxies[country] = [...new Set([...proxies[country], ...jsonData[country]])];
-            }
-
-            populateCountries();
-          } catch (error) {
-            console.error('Error fetching proxies:', error);
-          }
-        }
 
         function populateCountries() {
           const countries = Object.keys(proxies).sort();
@@ -217,7 +220,7 @@ export default {
 
         generateButton.addEventListener('click', generateLinks);
 
-        fetchProxies();
+        populateCountries();
       });
     <\/script>
 </body>
